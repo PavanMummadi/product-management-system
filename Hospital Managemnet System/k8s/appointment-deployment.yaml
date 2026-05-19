@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: appointment-service
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: appointment-service
+
+  template:
+
+    metadata:
+      labels:
+        app: appointment-service
+
+    spec:
+
+      containers:
+        - name: appointment-service
+
+          image: appointment-service:latest
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 9092
+
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:oracle:thin:@host.docker.internal:1521/XEPDB1
+
+            - name: SPRING_DATASOURCE_USERNAME
+              value: hospital
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: hospital123
+
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-service:8761/eureka
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: appointment-service
+
+spec:
+  selector:
+    app: appointment-service
+
+  ports:
+    - protocol: TCP
+      port: 9092
+      targetPort: 9092
+
+  type: NodePort

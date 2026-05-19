@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: billing-service
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: billing-service
+
+  template:
+
+    metadata:
+      labels:
+        app: billing-service
+
+    spec:
+
+      containers:
+        - name: billing-service
+
+          image: billing-service:latest
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 9093
+
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:oracle:thin:@host.docker.internal:1521/XEPDB1
+
+            - name: SPRING_DATASOURCE_USERNAME
+              value: hospital
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: hospital123
+
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-service:8761/eureka
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: billing-service
+
+spec:
+  selector:
+    app: billing-service
+
+  ports:
+    - protocol: TCP
+      port: 9093
+      targetPort: 9093
+
+  type: NodePort

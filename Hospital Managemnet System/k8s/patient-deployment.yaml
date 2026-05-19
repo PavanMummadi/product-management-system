@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: patient-service
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: patient-service
+
+  template:
+
+    metadata:
+      labels:
+        app: patient-service
+
+    spec:
+
+      containers:
+        - name: patient-service
+
+          image: patient-service:latest
+          imagePullPolicy: Never
+
+          ports:
+            - containerPort: 9090
+
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:oracle:thin:@host.docker.internal:1521/XEPDB1
+
+            - name: SPRING_DATASOURCE_USERNAME
+              value: hospital
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: hospital123
+
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka-service:8761/eureka
+
+---
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: patient-service
+
+spec:
+  selector:
+    app: patient-service
+
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+
+  type: NodePort
